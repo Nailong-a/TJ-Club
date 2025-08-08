@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高能英雄代练 - 后台管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        dark: '#111827',
+                        'dark-light': '#1F2937',
+                        accent: '#F59E0B'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1;
+            }
+            .glow {
+                @apply shadow-lg shadow-primary/30;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-white font-inter min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-dark-light sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-trophy text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold">高能英雄代练 - 后台管理</h1>
+            </div>
+            <div>
+                <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                    <i class="fa fa-sign-out mr-2"></i> 退出登录
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="bg-dark-light rounded-xl p-6 shadow-lg mb-8 border border-gray-700">
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fa fa-list-alt text-primary mr-2"></i> 订单列表
+            </h2>
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex space-x-4">
+                    <button id="allOrdersBtn" class="bg-primary text-white px-4 py-2 rounded-lg transition-all duration-300">全部订单</button>
+                    <button id="pendingOrdersBtn" class="bg-dark border border-gray-700 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:border-primary">待处理</button>
+                    <button id="completedOrdersBtn" class="bg-dark border border-gray-700 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:border-primary">已完成</button>
+                </div>
+                <div class="relative">
+                    <input type="text" id="searchOrderInput" placeholder="搜索订单..." class="bg-dark border border-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 w-64 pr-10">
+                    <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-dark border-b border-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-gray-400 font-medium">订单ID</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">游戏类型</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">服务类型</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">当前段位</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">目标段位</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">选择打手</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">是否加急</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">联系人</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">提交时间</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">状态</th>
+                            <th class="px-6 py-3 text-gray-400 font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
+            <div id="noOrdersMessage" class="text-center py-12 hidden">
+                <div class="text-5xl text-gray-600 mb-4"><i class="fa fa-file-text-o"></i></div>
+                <p class="text-gray-400 text-lg">暂无订单数据</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-light py-6 border-t border-gray-700">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <p>© 2023 高能英雄代练平台 版权所有</p>
+        </div>
+    </footer>
+
+    <!-- 订单详情模态框 -->
+    <div id="orderDetailModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-light rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">订单详情</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-white transition-colors duration-300">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="orderDetailContent" class="space-y-4"></div>
+            <div class="mt-6 flex justify-end space-x-4">
+                <button id="closeDetailBtn" class="bg-dark border border-gray-700 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:border-primary">关闭</button>
+                <button id="markCompletedBtn" class="bg-secondary text-white px-4 py-2 rounded-lg transition-all duration-300">标记为完成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取订单数据
+            function fetchOrders() {
+                fetch('/admin/orders')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('获取订单数据失败');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderOrders(data.orders);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('获取订单数据失败，请重试');
+                    });
+            }
+
+            // 渲染订单列表
+            function renderOrders(orders) {
+                const tableBody = document.getElementById('ordersTableBody');
+                const noOrdersMessage = document.getElementById('noOrdersMessage');
+
+                if (orders.length === 0) {
+                    tableBody.innerHTML = '';
+                    noOrdersMessage.classList.remove('hidden');
+                    return;
+                }
+
+                noOrdersMessage.classList.add('hidden');
+                tableBody.innerHTML = '';
+
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-700 hover:bg-dark transition-colors duration-300';
+
+                    // 格式化时间
+                    const formattedDate = new Date(order.timestamp).toLocaleString();
+
+                    // 状态样式
+                    let statusClass = '';
+                    let statusText = '';
+                    if (order.status === 'pending') {
+                        statusClass = 'bg-yellow-500/20 text-yellow-400';
+                        statusText = '待处理';
+                    } else if (order.status === 'completed') {
+                        statusClass = 'bg-green-500/20 text-green-400';
+                        statusText = '已完成';
+                    }
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium">${order.id}</td>
+                        <td class="px-6 py-4">${order.gameType || '-'}</td>
+                        <td class="px-6 py-4">${order.serviceType || '-'}</td>
+                        <td class="px-6 py-4">${order.currentLevel || '-'}</td>
+                        <td class="px-6 py-4">${order.targetLevel || '-'}</td>
+                        <td class="px-6 py-4">${order.playerSelect || '-'}</td>
+                        <td class="px-6 py-4">${order.urgent === 'yes' ? '是' : '否'}</td>
+                        <td class="px-6 py-4">${order.contactPhone || '-'}</td>
+                        <td class="px-6 py-4">${formattedDate}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span></td>
+                        <td class="px-6 py-4">
+                            <button class="view-detail-btn text-primary hover:text-primary/80 transition-colors duration-300 mr-2" data-id="${order.id}">
+                                <i class="fa fa-eye"></i> 查看
+                            </button>
+                            ${order.status === 'pending' ? `
+                            <button class="complete-btn text-secondary hover:text-secondary/80 transition-colors duration-300" data-id="${order.id}">
+                                <i class="fa fa-check"></i> 完成
+                            </button>
+                            ` : ''}
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+                // 添加查看详情事件监听
+                document.querySelectorAll('.view-detail-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const orderId = this.getAttribute('data-id');
+                        viewOrderDetail(orderId);
+                    });
+                });
+
+                // 添加完成订单事件监听
+                document.querySelectorAll('.complete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const orderId = this.getAttribute('data-id');
+                        markOrderAsCompleted(orderId);
+                    });
+                });
+            }
+
+            // 查看订单详情
+            function viewOrderDetail(orderId) {
+                fetch('/admin/orders')
+                    .then(response => response.json())
+                    .then(data => {
+                        const order = data.orders.find(o => o.id === orderId);
+                        if (!order) {
+                            alert('订单不存在');
+                            return;
+                        }
+
+                        const modal = document.getElementById('orderDetailModal');
+                        const content = document.getElementById('orderDetailContent');
+                        const markCompletedBtn = document.getElementById('markCompletedBtn');
+
+                        // 格式化时间
+                        const formattedDate = new Date(order.timestamp).toLocaleString();
+
+                        // 状态样式
+                        let statusClass = '';
+                        let statusText = '';
+                        if (order.status === 'pending') {
+                            statusClass = 'bg-yellow-500/20 text-yellow-400';
+                            statusText = '待处理';
+                        } else if (order.status === 'completed') {
+                            statusClass = 'bg-green-500/20 text-green-400';
+                            statusText = '已完成';
+                        }
+
+                        content.innerHTML = `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-gray-400 text-sm">订单ID</p>
+                                    <p class="font-medium">${order.id}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">提交时间</p>
+                                    <p class="font-medium">${formattedDate}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">游戏类型</p>
+                                    <p class="font-medium">${order.gameType || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">服务类型</p>
+                                    <p class="font-medium">${order.serviceType || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">当前段位</p>
+                                    <p class="font-medium">${order.currentLevel || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">目标段位</p>
+                                    <p class="font-medium">${order.targetLevel || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">选择打手</p>
+                                    <p class="font-medium">${order.playerSelect || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">是否加急</p>
+                                    <p class="font-medium">${order.urgent === 'yes' ? '是' : '否'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">联系电话</p>
+                                    <p class="font-medium">${order.contactPhone || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">微信/QQ</p>
+                                    <p class="font-medium">${order.contactWechat || '-'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">状态</p>
+                                    <p class="font-medium"><span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span></p>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-gray-400 text-sm">账号信息</p>
+                                <p class="font-medium bg-dark p-3 rounded-lg break-all">${order.accountInfo || '-'}</p>
+                            </div>
+                        `;
+
+                        // 显示或隐藏"标记为完成"按钮
+                        if (order.status === 'pending') {
+                            markCompletedBtn.classList.remove('hidden');
+                            markCompletedBtn.setAttribute('data-id', orderId);
+                        } else {
+                            markCompletedBtn.classList.add('hidden');
+                        }
+
+                        modal.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('获取订单详情失败');
+                    });
+            }
+
+            // 标记订单为完成
+            function markOrderAsCompleted(orderId) {
+                if (confirm('确定要将此订单标记为完成吗？')) {
+                    fetch('/admin/orders')
+                        .then(response => response.json())
+                        .then(data => {
+                            const orders = data.orders;
+                            const orderIndex = orders.findIndex(o => o.id === orderId);
+
+                            if (orderIndex === -1) {
+                                alert('订单不存在');
+                                return;
+                            }
+
+                            orders[orderIndex].status = 'completed';
+                            orders[orderIndex].completedAt = new Date().toISOString();
+
+                            // 由于我们没有实际的后端API，这里只是模拟更新
+                            // 在实际应用中，应该发送PUT请求到服务器
+                            alert('订单已标记为完成');
+                            fetchOrders(); // 重新获取订单数据
+                            document.getElementById('orderDetailModal').classList.add('hidden');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('更新订单状态失败');
+                        });
+                }
+            }
+
+            // 退出登录
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                // 清除认证信息
+                fetch('/admin/logout', {
+                    method: 'POST'
+                }).then(() => {
+                    window.location.href = '/';
+                });
+            });
+
+            // 关闭模态框
+            document.getElementById('closeModalBtn').addEventListener('click', function() {
+                document.getElementById('orderDetailModal').classList.add('hidden');
+            });
+
+            document.getElementById('closeDetailBtn').addEventListener('click', function() {
+                document.getElementById('orderDetailModal').classList.add('hidden');
+            });
+
+            // 标记为完成按钮事件
+            document.getElementById('markCompletedBtn').addEventListener('click', function() {
+                const orderId = this.getAttribute('data-id');
+                markOrderAsCompleted(orderId);
+            });
+
+            // 点击模态框外部关闭
+            document.getElementById('orderDetailModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            // 初始化页面
+            fetchOrders();
+
+            // 定期刷新订单数据（每30秒）
+            setInterval(fetchOrders, 30000);
+        });
+    </script>
+</body>
+</html>

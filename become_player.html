@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成为打手 - TJ Club</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7E22CE', // 主色调：深紫色（电竞感）
+                        secondary: '#3B82F6', // 辅助色：蓝色
+                        accent: '#F97316', // 强调色：橙色
+                        dark: '#0F172A', // 深色背景
+                        'dark-light': '#1E293B', // 浅深色
+                    },
+                    fontFamily: {
+                        gaming: ['Rajdhani', 'sans-serif', 'system-ui'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- 引入游戏风格字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 0 10px rgba(126, 34, 206, 0.5);
+            }
+            .glow {
+                box-shadow: 0 0 15px rgba(126, 34, 206, 0.5);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-8px);
+            }
+        }
+    </style>
+    <style>
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            border-top-color: #7E22CE;
+            animation: spinner 0.8s linear infinite;
+        }
+        
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 脉冲动画 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* 密码验证成功动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white font-gaming">
+    <!-- 加载动画 -->
+    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-dark z-50">
+        <div class="loader w-16 h-16 rounded-full border-4 border-gray-800"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-40 transition-all duration-300 py-4">
+        <div class="container mx-auto px-4 md:px-6">
+            <nav class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="index (2).html" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center glow">
+                        <span class="text-white font-bold text-xl">TJ</span>
+                    </div>
+                    <span class="text-2xl font-bold text-white">TJ <span class="text-primary">Club</span></span>
+                </a>
+                
+                <!-- 桌面导航 -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index (2).html#home" class="font-medium hover:text-primary transition-all duration-300">首页</a>
+                    <a href="index (2).html#services" class="font-medium hover:text-primary transition-all duration-300">服务项目</a>
+                    <a href="index (2).html#players" class="font-medium hover:text-primary transition-all duration-300">专业打手</a>
+                    <a href="index (2).html#prices" class="font-medium hover:text-primary transition-all duration-300">价格表</a>
+                    <a href="index (2).html#order" class="font-medium hover:text-primary transition-all duration-300">立即下单</a>
+                    <a href="become_player.html" class="font-medium text-primary transition-all duration-300">成为打手</a>
+                    <a href="index (2).html#contact" class="bg-primary text-white px-5 py-2 rounded-full hover:bg-primary/90 transition-all duration-300 glow">联系客服</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="menu-toggle" class="md:hidden text-2xl text-white">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </nav>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 bg-dark-light rounded-lg shadow-lg p-4 absolute left-4 right-4 border border-gray-800">
+                <div class="flex flex-col space-y-4">
+                    <a href="index (2).html#home" class="font-medium hover:text-primary transition-all duration-300 py-2">首页</a>
+                    <a href="index (2).html#services" class="font-medium hover:text-primary transition-all duration-300 py-2">服务项目</a>
+                    <a href="index (2).html#players" class="font-medium hover:text-primary transition-all duration-300 py-2">专业打手</a>
+                    <a href="index (2).html#prices" class="font-medium hover:text-primary transition-all duration-300 py-2">价格表</a>
+                    <a href="index (2).html#order" class="font-medium hover:text-primary transition-all duration-300 py-2">立即下单</a>
+                    <a href="become_player.html" class="font-medium text-primary transition-all duration-300 py-2">成为打手</a>
+                    <a href="index (2).html#contact" class="bg-primary text-white px-5 py-2 rounded-full hover:bg-primary/90 transition-all duration-300 text-center glow">联系客服</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section id="home" class="pt-32 pb-20 md:pt-40 md:pb-32 relative overflow-hidden">
+        <!-- 背景特效 -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/20 to-dark"></div>
+            <div class="absolute top-20 left-10 w-64 h-64 bg-primary/30 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-20 right-10 w-80 h-80 bg-secondary/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 md:px-6 relative z-10">
+            <div class="text-center max-w-3xl mx-auto">
+                <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6">
+                    成为 <span class="text-primary text-shadow">专业打手</span>，展现你的<span class="text-accent text-shadow">游戏实力</span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+                    加入我们的团队，利用你的游戏技能赚取收入，为玩家提供高质量的游戏代打和带练服务
+                </p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
+                    <a href="#apply" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-primary/90 transition-all duration-300 text-lg font-medium glow">
+                        立即申请
+                    </a>
+                    <a href="#requirements" class="bg-transparent border-2 border-primary text-white px-8 py-3 rounded-full hover:bg-primary/10 transition-all duration-300 text-lg font-medium">
+                        了解要求
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 密码验证区域 -->
+    <section id="password-verify" class="py-16 md:py-24 bg-dark-light relative overflow-hidden">
+        <div class="container mx-auto px-4 md:px-6 relative z-10">
+            <div class="max-w-md mx-auto bg-dark p-8 rounded-2xl shadow-xl border border-gray-800">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center">成为打手需要验证</h2>
+                <p class="text-gray-400 mb-6 text-center">请输入邀请密码以继续申请流程</p>
+                
+                <form id="password-form" class="space-y-6">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">邀请密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="password" name="password" required
+                                class="w-full pl-10 pr-4 py-3 bg-dark-light border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请输入邀请密码">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 glow">
+                            验证密码
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 申请表单区域 (默认隐藏) -->
+    <section id="application-form" class="py-16 md:py-24 bg-dark hidden fade-in">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">
+                填写<span class="text-primary">打手申请</span>表
+            </h2>
+            
+            <div class="max-w-3xl mx-auto bg-dark-light p-8 rounded-2xl shadow-xl border border-gray-800">
+                <form id="apply-form" class="space-y-8">
+                    <!-- 个人信息 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-2">姓名</label>
+                            <input type="text" id="name" name="name" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请输入您的姓名">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">手机号码</label>
+                            <input type="tel" id="phone" name="phone" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请输入您的手机号码">
+                        </div>
+                    </div>
+                    
+                    <!-- 游戏信息 -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="game-id" class="block text-sm font-medium text-gray-300 mb-2">游戏ID</label>
+                            <input type="text" id="game-id" name="game-id" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请输入您的高能英雄游戏ID">
+                        </div>
+                        
+                        <div>
+                            <label for="rank" class="block text-sm font-medium text-gray-300 mb-2">当前段位</label>
+                            <select id="rank" name="rank" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 appearance-none bg-dark bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%23718096%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat">
+                                <option value="">请选择段位</option>
+                                <option value="bronze">青铜</option>
+                                <option value="silver">白银</option>
+                                <option value="gold">黄金</option>
+                                <option value="platinum">铂金</option>
+                                <option value="diamond">钻石</option>
+                                <option value="master">大师</option>
+                                <option value="grandmaster">宗师</option>
+                                <option value="immortal">不朽</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="heroes" class="block text-sm font-medium text-gray-300 mb-2">擅长英雄 (可多选，用逗号分隔)</label>
+                            <input type="text" id="heroes" name="heroes" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="例如：闪电侠,鹰眼,堡垒">
+                        </div>
+                    </div>
+                    
+                    <!-- 联系方式 -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="wechat" class="block text-sm font-medium text-gray-300 mb-2">微信</label>
+                            <input type="text" id="wechat" name="wechat" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请输入您的微信号">
+                        </div>
+                        
+                        <div>
+                            <label for="experience" class="block text-sm font-medium text-gray-300 mb-2">游戏代练经验</label>
+                            <textarea id="experience" name="experience" rows="4" required
+                                class="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                                placeholder="请简述您的游戏代练经验和优势"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="text-center pt-4">
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 glow">
+                            提交申请
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 要求与福利区域 -->
+    <section id="requirements" class="py-16 md:py-24 bg-dark relative overflow-hidden">
+        <div class="container mx-auto px-4 md:px-6 relative z-10">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center">
+                打手<span class="text-primary">要求</span>与<span class="text-accent">福利</span>
+            </h2>
+            <p class="text-gray-400 mb-16 text-center max-w-2xl mx-auto">
+                了解成为我们专业打手的要求和享有的福利
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                <!-- 要求 -->
+                <div class="bg-dark-light p-8 rounded-2xl shadow-lg border border-gray-800 hover:border-primary/50 transition-all duration-300">
+                    <div class="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-list-check text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-6">成为打手的要求</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>游戏段位达到钻石及以上</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>熟悉高能英雄游戏机制和各英雄技能</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>有良好的游戏意识和团队协作能力</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>能够保证稳定的在线时间</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>有良好的沟通能力和服务意识</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span>无不良游戏记录和作弊行为</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 福利 -->
+                <div class="bg-dark-light p-8 rounded-2xl shadow-lg border border-gray-800 hover:border-accent/50 transition-all duration-300">
+                    <div class="w-14 h-14 bg-accent/20 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-gift text-2xl text-accent"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-6">成为打手的福利</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-money text-accent mt-1"></i>
+                            <span>高比例佣金分成，多劳多得</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-trophy text-accent mt-1"></i>
+                            <span>定期举办内部比赛，赢取额外奖励</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-users text-accent mt-1"></i>
+                            <span>加入专业打手社区，交流游戏技巧</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-shield text-accent mt-1"></i>
+                            <span>安全保障，避免交易风险</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-calendar-check-o text-accent mt-1"></i>
+                            <span>灵活的工作时间，自由安排</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fa fa-rocket text-accent mt-1"></i>
+                            <span>表现优秀者可晋升为资深打手或团队管理</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-light py-12 border-t border-gray-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <a href="index (2).html" class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center glow">
+                            <span class="text-white font-bold text-xl">TJ</span>
+                        </div>
+                        <span class="text-2xl font-bold text-white">TJ <span class="text-primary">Club</span></span>
+                    </a>
+                    <p class="text-gray-400 mb-4">
+                        专业的高能英雄代打与带练服务平台，为玩家提供高效、安全、优质的游戏体验。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-wechat text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">
+                            <i class="fa fa-qq text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">服务内容</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index (2).html#services" class="text-gray-400 hover:text-primary transition-colors duration-300">段位提升</a></li>
+                        <li><a href="index (2).html#services" class="text-gray-400 hover:text-primary transition-colors duration-300">陪玩带练</a></li>
+                        <li><a href="index (2).html#services" class="text-gray-400 hover:text-primary transition-colors duration-300">英雄教学</a></li>
+                        <li><a href="index (2).html#services" class="text-gray-400 hover:text-primary transition-colors duration-300">账号托管</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">帮助中心</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">常见问题</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">下单流程</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">付款方式</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">售后服务</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">联系我们</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <i class="fa fa-phone text-primary"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fa fa-envelope text-primary"></i>
+                            <span class="text-gray-400">contact@tjclub.com</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fa fa-map-marker text-primary"></i>
+                            <span class="text-gray-400">北京市朝阳区电竞产业园</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2023 TJ Club. All rights reserved. 高能英雄代打服务平台</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all duration-300 opacity-0 invisible z-40 glow">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隐藏加载动画
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('opacity-0');
+                setTimeout(function() {
+                    document.getElementById('loader').style.display = 'none';
+                }, 500);
+            }, 1000);
+
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function() {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('bg-dark/90', 'backdrop-blur-md', 'py-2', 'shadow-lg');
+                    navbar.classList.remove('py-4');
+                } else {
+                    navbar.classList.remove('bg-dark/90', 'backdrop-blur-md', 'py-2', 'shadow-lg');
+                    navbar.classList.add('py-4');
+                }
+            });
+
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            menuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuToggle.querySelector('i');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // 返回顶部按钮
+            const backToTopButton = document.getElementById('back-to-top');
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 500) {
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopButton.classList.add('opacity-0', 'invisible');
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                }
+            });
+
+            backToTopButton.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // 密码验证功能
+            const passwordForm = document.getElementById('password-form');
+            const passwordVerifySection = document.getElementById('password-verify');
+            const applicationFormSection = document.getElementById('application-form');
+            const correctPassword = '3300021';
+
+            passwordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const passwordInput = document.getElementById('password');
+                const password = passwordInput.value.trim();
+
+                if (password === correctPassword) {
+                    // 密码正确，显示申请表单
+                    passwordVerifySection.classList.add('hidden');
+                    setTimeout(function() {
+                        applicationFormSection.classList.remove('hidden');
+                    }, 300);
+                } else {
+                    // 密码错误，显示错误提示
+                    alert('邀请密码错误，请重试');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            });
+
+            // 申请表单提交
+            const applyForm = document.getElementById('apply-form');
+
+            applyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('申请提交成功！我们将尽快审核您的信息，并通过微信联系您。');
+                applyForm.reset();
+            });
+        });
+    </script>
+</body>
+</html>
