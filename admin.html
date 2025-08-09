@@ -58,8 +58,22 @@
     <main class="flex-grow container mx-auto px-4 py-8">
         <div class="bg-dark-light rounded-xl p-6 shadow-lg mb-8 border border-gray-700">
             <h2 class="text-2xl font-bold mb-4 flex items-center">
-                <i class="fa fa-list-alt text-primary mr-2"></i> 订单列表
+                <i class="fa fa-file-invoice-dollar text-primary mr-2"></i> 订单管理
             </h2>
+            <div class="flex flex-col md:flex-row gap-4 items-start md:items-center mb-6">
+                <p class="text-gray-400 flex-1">请选择要查看的订单JSON文件，可以选择多个文件。</p>
+                <div class="flex gap-4 w-full md:w-auto">
+                    <label for="file-upload" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors flex items-center cursor-pointer">
+                        <i class="fa fa-file-import mr-2"></i>选择文件
+                    </label>
+                    <input id="file-upload" type="file" accept=".json" multiple class="hidden" />
+                    <button id="clear-orders" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center">
+                        <i class="fa fa-trash-alt mr-2"></i>清空订单
+                    </button>
+                </div>
+            </div>
+            <div id="selected-files" class="mt-4 text-gray-400 mb-6"></div>
+
             <div class="flex justify-between items-center mb-6">
                 <div class="flex space-x-4">
                     <button id="allOrdersBtn" class="bg-primary text-white px-4 py-2 rounded-lg transition-all duration-300">全部订单</button>
@@ -124,22 +138,131 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取订单数据
-            function fetchOrders() {
-                fetch('/admin/orders')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('获取订单数据失败');
+            let orders = []; // 存储本地订单数据
+
+            // 文件上传处理
+            const fileUploadInput = document.getElementById('file-upload');
+            const clearOrdersBtn = document.getElementById('clear-orders');
+            const selectedFilesEl = document.getElementById('selected-files');
+
+            // 处理文件上传
+            fileUploadInput.addEventListener('change', function(e) {
+                if (this.files && this.files.length > 0) {
+                    // 显示选中的文件名
+                    const fileNames = Array.from(this.files).map(file => file.name).join(', ');
+                    selectedFilesEl.textContent = `已选择文件: ${fileNames}`;
+
+                    // 解析每个文件
+                    Array.from(this.files).forEach(file => {
+                        if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                try {
+                                    const orderData = JSON.parse(e.target.result);
+                                    
+                                    // 验证订单数据
+                                    if (!validateOrderData(orderData, file.name)) {
+                                        return;
+                                    }
+                                    
+                                    // 补充必要字段
+                                    if (!orderData.timestamp) {
+                                        orderData.timestamp = new Date().toISOString();
+                                    }
+                                    if (!orderData.status) {
+                                        orderData.status = 'pending';
+                                    }
+                                    // 检查订单是否已存在
+                                    const existingOrderIndex = orders.findIndex(o => o.id === orderData.id);
+                                    if (existingOrderIndex !== -1) {
+                                        // 更新现有订单
+                                        orders[existingOrderIndex] = orderData;
+                                        alert(`订单 ${orderData.id} 已更新`);
+                                    } else {
+                                        // 添加新订单
+                                        orders.push(orderData);
+                                        alert(`订单 ${orderData.id} 已添加`);
+                                    }
+                                    renderOrders(orders);
+                                } catch (error) {
+                            alert(`解析文件 ${file.name} 失败: ${error.message}`);
+                            console.error('JSON解析错误:', error, '文件内容:', e.target.result);
                         }
-                        return response.json();
-                    })
-                    .then(data => {
-                        renderOrders(data.orders);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('获取订单数据失败，请重试');
+                            };
+
+                            reader.readAsText(file);
+                        } else {
+                            alert(`文件 ${file.name} 不是有效的JSON文件`);
+                        }
                     });
+                }
+            });
+
+            // 清空订单
+            clearOrdersBtn.addEventListener('click', function() {
+                if (confirm('确定要清空所有订单吗？')) {
+                    orders = [];
+                    selectedFilesEl.textContent = '';
+                    renderOrders(orders);
+                }
+            });
+
+            // 获取订单数据（现在从本地数组获取）
+            function fetchOrders() {
+                renderOrders(orders);
+            }
+
+            // 验证订单数据函数
+            function validateOrderData(orderData, fileName) {
+                // 检查必要字段
+                const requiredFields = ['id', 'gameType', 'serviceType', 'contactPhone'];
+                const missingFields = requiredFields.filter(field => !orderData[field]);
+                
+                if (missingFields.length > 0) {
+                    alert(`文件 ${fileName} 中的订单缺少必要字段: ${missingFields.join(', ')}`);
+                    return false;
+                }
+                
+                // 验证ID格式
+                if (!/^ORD\d+$/.test(orderData.id)) {
+                    alert(`文件 ${fileName} 中的订单ID格式无效，应为ORD开头后跟数字`);
+                    return false;
+                }
+                
+                // 验证联系电话格式
+                if (!/^1[3-9]\d{9}$/.test(orderData.contactPhone)) {
+                    alert(`文件 ${fileName} 中的联系电话格式无效，请检查`);
+                    return false;
+                }
+                
+                // 验证游戏类型
+                const validGameTypes = ['高能英雄', '王者荣耀', '和平精英', '英雄联盟'];
+                if (!validGameTypes.includes(orderData.gameType)) {
+                    alert(`文件 ${fileName} 中的游戏类型无效，可选值: ${validGameTypes.join(', ')}`);
+                    return false;
+                }
+                
+                // 验证服务类型
+                const validServiceTypes = ['段位代练', '金币代刷', '皮肤代抽', '账号代练'];
+                if (!validServiceTypes.includes(orderData.serviceType)) {
+                    alert(`文件 ${fileName} 中的服务类型无效，可选值: ${validServiceTypes.join(', ')}`);
+                    return false;
+                }
+                
+                // 验证是否加急
+                if (orderData.urgent && !['yes', 'no'].includes(orderData.urgent)) {
+                    alert(`文件 ${fileName} 中的加急字段无效，应为'yes'或'no'`);
+                    return false;
+                }
+                
+                // 验证时间戳（如果存在）
+                if (orderData.timestamp && isNaN(Date.parse(orderData.timestamp))) {
+                    alert(`文件 ${fileName} 中的时间戳格式无效`);
+                    return false;
+                }
+                
+                return true;
             }
 
             // 渲染订单列表
@@ -147,7 +270,29 @@
                 const tableBody = document.getElementById('ordersTableBody');
                 const noOrdersMessage = document.getElementById('noOrdersMessage');
 
-                if (orders.length === 0) {
+                // 筛选订单（根据当前选中的选项卡）
+                let filteredOrders = [...orders];
+                const activeTab = document.querySelector('#allOrdersBtn.bg-primary') ? 'all' : 
+                                  document.querySelector('#pendingOrdersBtn.bg-primary') ? 'pending' : 'completed';
+
+                if (activeTab === 'pending') {
+                    filteredOrders = orders.filter(order => order.status === 'pending');
+                } else if (activeTab === 'completed') {
+                    filteredOrders = orders.filter(order => order.status === 'completed');
+                }
+
+                // 搜索功能
+                const searchTerm = document.getElementById('searchOrderInput').value.toLowerCase();
+                if (searchTerm) {
+                    filteredOrders = filteredOrders.filter(order => {
+                        return order.id.toLowerCase().includes(searchTerm) ||
+                               (order.gameType && order.gameType.toLowerCase().includes(searchTerm)) ||
+                               (order.serviceType && order.serviceType.toLowerCase().includes(searchTerm)) ||
+                               (order.contactPhone && order.contactPhone.toLowerCase().includes(searchTerm));
+                    });
+                }
+
+                if (filteredOrders.length === 0) {
                     tableBody.innerHTML = '';
                     noOrdersMessage.classList.remove('hidden');
                     return;
@@ -156,7 +301,14 @@
                 noOrdersMessage.classList.add('hidden');
                 tableBody.innerHTML = '';
 
-                orders.forEach(order => {
+                // 按时间戳排序（最新的在前）
+                filteredOrders.sort((a, b) => {
+                    const dateA = new Date(a.timestamp);
+                    const dateB = new Date(b.timestamp);
+                    return dateB - dateA;
+                });
+
+                filteredOrders.forEach(order => {
                     const row = document.createElement('tr');
                     row.className = 'border-b border-gray-700 hover:bg-dark transition-colors duration-300';
 
@@ -219,14 +371,11 @@
 
             // 查看订单详情
             function viewOrderDetail(orderId) {
-                fetch('/admin/orders')
-                    .then(response => response.json())
-                    .then(data => {
-                        const order = data.orders.find(o => o.id === orderId);
-                        if (!order) {
-                            alert('订单不存在');
-                            return;
-                        }
+                const order = orders.find(o => o.id === orderId);
+                if (!order) {
+                    alert('订单不存在');
+                    return;
+                }
 
                         const modal = document.getElementById('orderDetailModal');
                         const content = document.getElementById('orderDetailContent');
@@ -308,51 +457,34 @@
                         }
 
                         modal.classList.remove('hidden');
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('获取订单详情失败');
-                    });
+
             }
 
             // 标记订单为完成
             function markOrderAsCompleted(orderId) {
                 if (confirm('确定要将此订单标记为完成吗？')) {
-                    fetch('/admin/orders')
-                        .then(response => response.json())
-                        .then(data => {
-                            const orders = data.orders;
-                            const orderIndex = orders.findIndex(o => o.id === orderId);
+                    const orderIndex = orders.findIndex(o => o.id === orderId);
 
-                            if (orderIndex === -1) {
-                                alert('订单不存在');
-                                return;
-                            }
+                    if (orderIndex === -1) {
+                        alert('订单不存在');
+                        return;
+                    }
 
-                            orders[orderIndex].status = 'completed';
-                            orders[orderIndex].completedAt = new Date().toISOString();
+                    orders[orderIndex].status = 'completed';
+                    orders[orderIndex].completedAt = new Date().toISOString();
 
-                            // 由于我们没有实际的后端API，这里只是模拟更新
-                            // 在实际应用中，应该发送PUT请求到服务器
-                            alert('订单已标记为完成');
-                            fetchOrders(); // 重新获取订单数据
-                            document.getElementById('orderDetailModal').classList.add('hidden');
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('更新订单状态失败');
-                        });
+                    alert('订单已标记为完成');
+                    fetchOrders(); // 重新渲染订单数据
+                    document.getElementById('orderDetailModal').classList.add('hidden');
                 }
             }
 
             // 退出登录
             document.getElementById('logoutBtn').addEventListener('click', function() {
-                // 清除认证信息
-                fetch('/admin/logout', {
-                    method: 'POST'
-                }).then(() => {
-                    window.location.href = '/';
-                });
+                // 本地版无需实际登出
+                if (confirm('确定要退出吗？')) {
+                    window.location.href = 'index.html';
+                }
             });
 
             // 关闭模态框
@@ -380,8 +512,41 @@
             // 初始化页面
             fetchOrders();
 
-            // 定期刷新订单数据（每30秒）
-            setInterval(fetchOrders, 30000);
+            // 订单选项卡切换
+            document.getElementById('allOrdersBtn').addEventListener('click', function() {
+                document.getElementById('allOrdersBtn').classList.add('bg-primary');
+                document.getElementById('allOrdersBtn').classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('pendingOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('pendingOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('completedOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('completedOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                fetchOrders();
+            });
+
+            document.getElementById('pendingOrdersBtn').addEventListener('click', function() {
+                document.getElementById('pendingOrdersBtn').classList.add('bg-primary');
+                document.getElementById('pendingOrdersBtn').classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('allOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('allOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('completedOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('completedOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                fetchOrders();
+            });
+
+            document.getElementById('completedOrdersBtn').addEventListener('click', function() {
+                document.getElementById('completedOrdersBtn').classList.add('bg-primary');
+                document.getElementById('completedOrdersBtn').classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('allOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('allOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                document.getElementById('pendingOrdersBtn').classList.remove('bg-primary');
+                document.getElementById('pendingOrdersBtn').classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary');
+                fetchOrders();
+            });
+
+            // 搜索功能
+            document.getElementById('searchOrderInput').addEventListener('input', function() {
+                fetchOrders();
+            });
         });
     </script>
 </body>
